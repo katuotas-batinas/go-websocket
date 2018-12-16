@@ -43,6 +43,6 @@ func testResponse(send string, expect string, conn *websocket.Conn, t *testing.T
 	}
 
 	if string(msg) != expect {
-		t.Errorf("message transformation failed: got %v want %v", send, expect)
+		t.Errorf("message transformation failed: got %v want %v", string(msg), expect)
 	}
 }
