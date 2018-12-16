@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func TestExample(t *testing.T) {
+func TestServer(t *testing.T) {
 	// Create test server
 	s := httptest.NewServer(http.HandlerFunc(serveWs))
 	defer s.Close()
