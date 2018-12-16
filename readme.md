@@ -13,7 +13,7 @@ URL must containt full path to the websocket endpoit, for example:
 ## Test
 To test server, run command:
 
-    go test server.go test_server.go
+    go test server.go server_test.go -v
 
 ## Libraries used
 
