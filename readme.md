@@ -1,4 +1,9 @@
 # WebSocket server
+## Installing dependencies
+This application requires gorilla/websocket library, to install it run command:
+
+    go get github.com/gorilla/websocket
+
 ## Running example
 To run example, start the server:
 
