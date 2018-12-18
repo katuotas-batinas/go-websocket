@@ -11,7 +11,7 @@ To run example, start the server:
 And the client:
 
     go run client.go <url>
-URL must containt full path to the websocket endpoit, for example:
+URL must containt full path to the websocket endpoint, for example:
 
     go run client.go ws://localhost:3000/ws
 
