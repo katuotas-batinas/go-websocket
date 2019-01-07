@@ -14,9 +14,12 @@ const (
 	messageType = websocket.TextMessage
 	searchChar  = "?"
 	replaceChar = "!"
+	publishersMax = 1
+	subscribersMax = 0
 )
 
 var upgrader = websocket.Upgrader{}
+var publishers map[*websocket.Conn]bool
 
 func serveWs(w http.ResponseWriter, r *http.Request) {
 	// Upgrade HTTP connection to WebSocket connection
@@ -25,7 +28,14 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
+
+	// Add connection to publishers map
+	publishers[conn] = true
+
+	log.Printf("Publishers connected: %d", len(publishers))
+
 	defer conn.Close()
+	defer delete(publishers, conn)
 
 	for {
 		mt, msg, err := conn.ReadMessage()
@@ -62,7 +72,7 @@ func main() {
 
 	var port = flag.Args()[0]
 
-	http.HandleFunc("/ws", serveWs)
+	http.HandleFunc("/publisher", servePublisher)
 
 	err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
 	if err != nil {
