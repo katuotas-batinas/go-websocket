@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"fmt"
 
 	"github.com/gorilla/websocket"
 )
@@ -10,19 +9,25 @@ import (
 type Client struct {
 	conn *websocket.Conn
 
+	read chan []byte
+
 	send chan []byte
+
+	disconnect chan bool
 }
 
-func (c *Client) read(incoming chan []byte) {
+func (c *Client) listen() {
 	defer func() {
-    fmt.Println("bye")
+    c.disconnect <- true
 		c.conn.Close()
 	}()
 
 	for {
 		mt, msg, err := c.conn.ReadMessage()
 		if err != nil {
-			log.Println(err)
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Println(err)
+			}
 			break
 		}
 
@@ -31,17 +36,35 @@ func (c *Client) read(incoming chan []byte) {
 			break
 		}
 
-		incoming <- msg
+		c.read <- msg
 	}
 }
 
 func (c *Client) write() {
+	defer func() {
+    c.disconnect <- true
+		c.conn.Close()
+	}()
 
+	for {
+		select {
+		case msg := <-c.send:
+			err := c.conn.WriteMessage(messageType, msg)
+			if err != nil {
+				log.Println(err)
+				break
+			}
+		case <-c.disconnect:
+			return
+		}
+	}
 }
 
 func newClient(conn *websocket.Conn) *Client {
 	return &Client{
 		conn: conn,
+		read: make(chan []byte),
 		send: make(chan []byte),
+		disconnect: make(chan bool),
 	}
 }
