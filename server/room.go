@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 type Room struct {
 	publisher *Client
 
@@ -9,7 +7,11 @@ type Room struct {
 
 	subscribe chan *Client
 
+	onSubscribe chan *Client
+
 	unsubscribe chan *Client
+
+	onUnsubscribe chan *Client
 
 	broadcast chan []byte
 }
@@ -19,11 +21,11 @@ func (r *Room) listen() {
 		select {
 		case subscriber := <-r.subscribe:
 			r.subscribers[subscriber] = subscriber
-			fmt.Println("New subsriber connected")
+			r.onSubscribe <- subscriber
 		case subscriber := <-r.unsubscribe:
 			if _, ok := r.subscribers[subscriber]; ok {
 				delete(r.subscribers, subscriber)
-				fmt.Println("Subscriber disconnected")
+				r.onUnsubscribe <- subscriber
 			}
 		case msg := <-r.broadcast:
 			for _, subscriber := range r.subscribers {
@@ -38,6 +40,8 @@ func newRoom(publisher *Client) *Room {
 		publisher: publisher,
 		subscribers:      make(map[*Client]*Client),
 		subscribe:    make(chan *Client),
+		onSubscribe:    make(chan *Client),
 		unsubscribe: make(chan *Client),
+		onUnsubscribe: make(chan *Client),
 	}
 }
