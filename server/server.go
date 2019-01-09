@@ -6,22 +6,24 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
 
 const (
-	messageType          = websocket.TextMessage
-	searchChar           = "?"
-	replaceChar          = "!"
-	undefinedRoomMessage = "You must define room name."
-	roomNameTakenMessage = "This room name is already taken."
-	nonExistentRoomMessage = "Room %s does not exist."
-	newSubscriberMessage = "New subscriber connected. You have %d subscribers."
+	messageType                   = websocket.TextMessage
+	searchChar                    = "?"
+	replaceChar                   = "!"
+	undefinedRoomMessage          = "You must define room name."
+	roomNameTakenMessage          = "This room name is already taken."
+	nonExistentRoomMessage        = "Room %s does not exist."
+	newSubscriberMessage          = "New subscriber connected. You have %d subscribers."
 	subscriberDisconnectedMessage = "Subscriber has disconnected. You have %d subscribers."
-	publisherDisconnectedMessage = "Publisher of %s has disconnected."
+	publisherDisconnectedMessage  = "Publisher of %s has disconnected."
 )
 
+var mutex = &sync.Mutex{}
 var upgrader = websocket.Upgrader{}
 var rooms map[string]*Room
 
@@ -53,7 +55,9 @@ func servePublisher(w http.ResponseWriter, r *http.Request) {
 
 	// Create room
 	room := newRoom(client)
+	mutex.Lock()
 	rooms[roomName] = room
+	mutex.Unlock()
 	go room.listen()
 
 	for {
@@ -66,9 +70,9 @@ func servePublisher(w http.ResponseWriter, r *http.Request) {
 			delete(rooms, roomName)
 			return
 		case <-room.onSubscribe:
-			client.send <-[]byte(fmt.Sprintf(newSubscriberMessage, len(room.subscribers)))
+			client.send <- []byte(fmt.Sprintf(newSubscriberMessage, len(room.subscribers)))
 		case <-room.onUnsubscribe:
-			client.send <-[]byte(fmt.Sprintf(subscriberDisconnectedMessage, len(room.subscribers)))
+			client.send <- []byte(fmt.Sprintf(subscriberDisconnectedMessage, len(room.subscribers)))
 		}
 	}
 }
@@ -82,7 +86,9 @@ func serveSubscriber(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if room exists
+	mutex.Lock()
 	room, ok := rooms[roomName]
+	mutex.Unlock()
 	if !ok {
 		fmt.Fprintf(w, nonExistentRoomMessage, roomName)
 		return
