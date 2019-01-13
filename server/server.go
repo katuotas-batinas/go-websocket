@@ -37,11 +37,12 @@ func servePublisher(w http.ResponseWriter, r *http.Request) {
 
 	// Check if room name is available
 	mutex.Lock()
-	if _, ok := rooms[roomName]; ok {
+	_, ok := rooms[roomName]
+	mutex.Unlock()
+	if ok {
 		fmt.Fprint(w, roomNameTakenMessage)
 		return
 	}
-	mutex.Unlock()
 
 	// Upgrade HTTP connection to WebSocket connection
 	conn, err := upgrader.Upgrade(w, r, nil)
