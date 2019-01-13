@@ -14,11 +14,14 @@ type Client struct {
 	send chan []byte
 
 	disconnect chan bool
+
+	endWrite chan bool
 }
 
 func (c *Client) listen() {
 	defer func() {
-    c.disconnect <- true
+    	c.disconnect <- true
+    	c.endWrite <- true
 		c.conn.Close()
 	}()
 
@@ -42,7 +45,6 @@ func (c *Client) listen() {
 
 func (c *Client) write() {
 	defer func() {
-    c.disconnect <- true
 		c.conn.Close()
 	}()
 
@@ -54,7 +56,7 @@ func (c *Client) write() {
 				log.Println(err)
 				break
 			}
-		case <-c.disconnect:
+		case <-c.endWrite:
 			return
 		}
 	}
@@ -66,5 +68,6 @@ func newClient(conn *websocket.Conn) *Client {
 		read: make(chan []byte),
 		send: make(chan []byte),
 		disconnect: make(chan bool),
+		endWrite: make(chan bool),
 	}
 }
