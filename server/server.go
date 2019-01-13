@@ -12,15 +12,15 @@ import (
 )
 
 const (
-	messageType                   = websocket.TextMessage
-	searchChar                    = "?"
-	replaceChar                   = "!"
-	undefinedRoomMessage          = "You must define room name."
-	roomNameTakenMessage          = "This room name is already taken."
-	nonExistentRoomMessage        = "Room %s does not exist."
-	newSubscriberMessage          = "New subscriber connected. You have %d subscribers."
-	subscriberDisconnectedMessage = "Subscriber has disconnected. You have %d subscribers."
-	publisherDisconnectedMessage  = "Publisher of %s has disconnected."
+	messageType                  = websocket.TextMessage
+	searchChar                   = "?"
+	replaceChar                  = "!"
+	undefinedRoomMessage         = "You must define room name."
+	roomNameTakenMessage         = "This room name is already taken."
+	nonExistentRoomMessage       = "Room %s does not exist."
+	firstSubscriberMessage       = "FIRST_SUBSCRIBER"
+	noSubscribersMessage         = "NO_SUBSCRIBERS"
+	publisherDisconnectedMessage = "Publisher of %s has disconnected."
 )
 
 var mutex = &sync.Mutex{}
@@ -74,9 +74,13 @@ func servePublisher(w http.ResponseWriter, r *http.Request) {
 			mutex.Unlock()
 			return
 		case <-room.onSubscribe:
-			client.send <- []byte(fmt.Sprintf(newSubscriberMessage, len(room.subscribers)))
+			if len(room.subscribers) == 1 {
+				client.send <- []byte(firstSubscriberMessage)
+			}
 		case <-room.onUnsubscribe:
-			client.send <- []byte(fmt.Sprintf(subscriberDisconnectedMessage, len(room.subscribers)))
+			if len(room.subscribers) == 0 {
+				client.send <- []byte(noSubscribersMessage)
+			}
 		}
 	}
 }
