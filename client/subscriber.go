@@ -9,6 +9,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+const publisherDisconnectedMessage = "PUBLISHER_DISCONNECTED"
+
 func main() {
 	flag.Parse()
 
@@ -35,6 +37,11 @@ func main() {
 			return
 		}
 
-		fmt.Println(string(msg))
+		if string(msg) == publisherDisconnectedMessage {
+			fmt.Println("Publisher has disconnected.")
+			return
+		} else {
+			fmt.Println("Incoming message:", string(msg))
+		}
 	}
 }

@@ -20,7 +20,7 @@ const (
 	nonExistentRoomMessage       = "Room %s does not exist."
 	firstSubscriberMessage       = "FIRST_SUBSCRIBER"
 	noSubscribersMessage         = "NO_SUBSCRIBERS"
-	publisherDisconnectedMessage = "Publisher of %s has disconnected."
+	publisherDisconnectedMessage = "PUBLISHER_DISCONNECTED"
 )
 
 var mutex = &sync.Mutex{}
@@ -68,7 +68,7 @@ func servePublisher(w http.ResponseWriter, r *http.Request) {
 			msg = bytes.Replace(msg, []byte(searchChar), []byte(replaceChar), -1)
 			room.broadcast <- msg
 		case <-client.disconnect:
-			fmt.Printf(publisherDisconnectedMessage+"\n", roomName)
+			room.broadcast <- []byte(publisherDisconnectedMessage)
 			mutex.Lock()
 			delete(rooms, roomName)
 			mutex.Unlock()
