@@ -14,6 +14,7 @@ const (
 	firstSubscriberMessage = "FIRST_SUBSCRIBER"
 	noSubscribersMessage   = "NO_SUBSCRIBERS"
 	broadcastMessage       = "Welcome?"
+	broadcastInterval       = 1
 )
 
 func read(conn *websocket.Conn, incoming chan<- []byte) {
@@ -34,7 +35,7 @@ func read(conn *websocket.Conn, incoming chan<- []byte) {
 
 func broadcast(conn *websocket.Conn, stop chan bool) {
 	fmt.Println("Start broadcast")
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(1 * time.Second)
 	for {
 		select {
 		case <-ticker.C:
