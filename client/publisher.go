@@ -14,7 +14,7 @@ const (
 	firstSubscriberMessage = "FIRST_SUBSCRIBER"
 	noSubscribersMessage   = "NO_SUBSCRIBERS"
 	broadcastMessage       = "Welcome?"
-	broadcastInterval       = 1
+	broadcastInterval      = 1
 )
 
 func read(conn *websocket.Conn, incoming chan<- []byte, closed chan<- bool) {

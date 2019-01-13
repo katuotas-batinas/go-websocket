@@ -29,7 +29,7 @@ func (r *Room) listen() {
 			}
 		case msg := <-r.broadcast:
 			for _, subscriber := range r.subscribers {
-			    subscriber.send <- msg
+				subscriber.send <- msg
 			}
 		}
 	}
@@ -37,12 +37,12 @@ func (r *Room) listen() {
 
 func newRoom(publisher *Client) *Room {
 	return &Room{
-		publisher: publisher,
-		subscribers:      make(map[*Client]*Client),
-		subscribe:    make(chan *Client),
-		onSubscribe:    make(chan *Client),
-		unsubscribe: make(chan *Client),
+		publisher:     publisher,
+		subscribers:   make(map[*Client]*Client),
+		subscribe:     make(chan *Client),
+		onSubscribe:   make(chan *Client),
+		unsubscribe:   make(chan *Client),
 		onUnsubscribe: make(chan *Client),
-		broadcast: make(chan []byte),
+		broadcast:     make(chan []byte),
 	}
 }

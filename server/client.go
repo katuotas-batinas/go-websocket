@@ -20,8 +20,8 @@ type Client struct {
 
 func (c *Client) listen() {
 	defer func() {
-    	c.disconnect <- true
-    	c.endWrite <- true
+		c.disconnect <- true
+		c.endWrite <- true
 
 		close(c.read)
 		close(c.send)
@@ -70,10 +70,10 @@ func (c *Client) write() {
 
 func newClient(conn *websocket.Conn) *Client {
 	return &Client{
-		conn: conn,
-		read: make(chan []byte),
-		send: make(chan []byte),
+		conn:       conn,
+		read:       make(chan []byte),
+		send:       make(chan []byte),
 		disconnect: make(chan bool),
-		endWrite: make(chan bool),
+		endWrite:   make(chan bool),
 	}
 }
