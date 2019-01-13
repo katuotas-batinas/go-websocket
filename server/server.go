@@ -36,10 +36,12 @@ func servePublisher(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if room name is available
+	mutex.Lock()
 	if _, ok := rooms[roomName]; ok {
 		fmt.Fprint(w, roomNameTakenMessage)
 		return
 	}
+	mutex.Unlock()
 
 	// Upgrade HTTP connection to WebSocket connection
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -67,7 +69,9 @@ func servePublisher(w http.ResponseWriter, r *http.Request) {
 			room.broadcast <- msg
 		case <-client.disconnect:
 			fmt.Printf(publisherDisconnectedMessage+"\n", roomName)
+			mutex.Lock()
 			delete(rooms, roomName)
+			mutex.Unlock()
 			return
 		case <-room.onSubscribe:
 			client.send <- []byte(fmt.Sprintf(newSubscriberMessage, len(room.subscribers)))
