@@ -43,5 +43,6 @@ func newRoom(publisher *Client) *Room {
 		onSubscribe:    make(chan *Client),
 		unsubscribe: make(chan *Client),
 		onUnsubscribe: make(chan *Client),
+		broadcast: make(chan []byte),
 	}
 }
