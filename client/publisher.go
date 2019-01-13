@@ -17,7 +17,7 @@ const (
 	broadcastInterval       = 1
 )
 
-func read(conn *websocket.Conn, incoming chan<- []byte) {
+func read(conn *websocket.Conn, incoming chan<- []byte, closed chan<- bool) {
 	defer func() {
 		conn.Close()
 	}()
@@ -26,6 +26,7 @@ func read(conn *websocket.Conn, incoming chan<- []byte) {
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
+			closed <- true
 			return
 		}
 
@@ -66,8 +67,9 @@ func main() {
 	}
 
 	incoming := make(chan []byte)
+	conectionClosed := make(chan bool)
 	stopBroadcast := make(chan bool)
-	go read(conn, incoming)
+	go read(conn, incoming, conectionClosed)
 
 	for {
 		select {
@@ -78,6 +80,8 @@ func main() {
 			case noSubscribersMessage:
 				stopBroadcast <- true
 			}
+		case <-conectionClosed:
+			return
 		}
 	}
 }
