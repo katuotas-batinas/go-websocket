@@ -22,6 +22,12 @@ func (c *Client) listen() {
 	defer func() {
     	c.disconnect <- true
     	c.endWrite <- true
+
+		close(c.read)
+		close(c.send)
+		close(c.disconnect)
+		close(c.endWrite)
+
 		c.conn.Close()
 	}()
 
