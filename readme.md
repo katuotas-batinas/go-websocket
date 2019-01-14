@@ -7,18 +7,19 @@ This application requires gorilla/websocket library, to install it run command:
 ## Running example
 To run example, start the server:
 
-    go run server.go <port>
-And the client:
+    go run server/*.go <port>
+Publisher client:
 
-    go run client.go <url>
-URL must containt full path to the websocket endpoint, for example:
+    go run client/publisher.go ws://<ip>:<port>/publish?room=<name>
+Publisher client:
 
-    go run client.go ws://localhost:3000/ws
+    go run client/subscriber.go ws://<ip>:<port>/subscribe?room=<name>
+Example:
 
-## Test
-To test server, run command:
+    go run server/*.go 3000
+    go run client/publisher.go ws://localhost:3000/publish?room=test
+    go run client/subscriber.go ws://localhost:3000/subscribe?room=test
 
-    go test server.go server_test.go -v
 
 ## Libraries used
 
