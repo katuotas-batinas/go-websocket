@@ -20,6 +20,7 @@ const (
 	nonExistentRoomMessage       = "Room %s does not exist."
 	firstSubscriberMessage       = "FIRST_SUBSCRIBER"
 	noSubscribersMessage         = "NO_SUBSCRIBERS"
+	newSubscriberMessage         = "New subscriber connected. You have %d subscribers."
 	publisherDisconnectedMessage = "PUBLISHER_DISCONNECTED"
 )
 
@@ -77,6 +78,8 @@ func servePublisher(w http.ResponseWriter, r *http.Request) {
 		case <-room.onSubscribe:
 			if len(room.subscribers) == 1 {
 				client.send <- []byte(firstSubscriberMessage)
+			} else {
+				client.send <- []byte(fmt.Sprintf(newSubscriberMessage, len(room.subscribers)))
 			}
 		case <-room.onUnsubscribe:
 			if len(room.subscribers) == 0 {

@@ -79,6 +79,8 @@ func main() {
 				go broadcast(conn, stopBroadcast)
 			case noSubscribersMessage:
 				stopBroadcast <- true
+			default:
+				fmt.Println(string(msg))
 			}
 		case <-conectionClosed:
 			return
