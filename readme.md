@@ -11,7 +11,7 @@ To run example, start the server:
 Publisher client:
 
     go run client/publisher.go ws://<ip>:<port>/publish?room=<name>
-Publisher client:
+Subscriber client:
 
     go run client/subscriber.go ws://<ip>:<port>/subscribe?room=<name>
 Example:
