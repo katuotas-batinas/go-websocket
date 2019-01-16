@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
+	"runtime"
 
 	"github.com/gorilla/websocket"
 )
@@ -71,7 +73,7 @@ func servePublisher(w http.ResponseWriter, r *http.Request) {
 			room.broadcast <- msg
 		case <-client.disconnect:
 			room.broadcast <- []byte(publisherDisconnectedMessage)
-			room.stop <- true
+			close(room.stop)
 			mutex.Lock()
 			delete(rooms, roomName)
 			mutex.Unlock()
@@ -146,6 +148,16 @@ func main() {
 
 	http.HandleFunc("/publish", servePublisher)
 	http.HandleFunc("/subscribe", serveSubscriber)
+
+	go func() {
+		ticker := time.NewTicker(1 * time.Second)
+		for {
+			select {
+			case <-ticker.C:
+				fmt.Println(runtime.NumGoroutine())
+			}
+		}
+	}()
 
 	err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
 	if err != nil {
