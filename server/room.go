@@ -13,6 +13,8 @@ type Room struct {
 
 	onUnsubscribe chan *Client
 
+	stop chan bool
+
 	broadcast chan []byte
 }
 
@@ -31,6 +33,8 @@ func (r *Room) listen() {
 			for _, subscriber := range r.subscribers {
 				subscriber.send <- msg
 			}
+		case <-r.stop:
+			return
 		}
 	}
 }
@@ -44,5 +48,6 @@ func newRoom(publisher *Client) *Room {
 		unsubscribe:   make(chan *Client),
 		onUnsubscribe: make(chan *Client),
 		broadcast:     make(chan []byte),
+		stop:     	make(chan bool),
 	}
 }

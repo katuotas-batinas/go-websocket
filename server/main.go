@@ -71,6 +71,7 @@ func servePublisher(w http.ResponseWriter, r *http.Request) {
 			room.broadcast <- msg
 		case <-client.disconnect:
 			room.broadcast <- []byte(publisherDisconnectedMessage)
+			room.stop <- true
 			mutex.Lock()
 			delete(rooms, roomName)
 			mutex.Unlock()
