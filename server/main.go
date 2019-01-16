@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"runtime"
 	"sync"
 	"time"
-	"runtime"
 
 	"github.com/gorilla/websocket"
 )
@@ -24,6 +24,7 @@ const (
 	noSubscribersMessage         = "NO_SUBSCRIBERS"
 	newSubscriberMessage         = "New subscriber connected. You have %d subscribers."
 	publisherDisconnectedMessage = "PUBLISHER_DISCONNECTED"
+	enableGoroutineCounter       = false
 )
 
 var mutex = &sync.Mutex{}
@@ -135,11 +136,25 @@ func serveSubscriber(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func countGoroutines() {
+	ticker := time.NewTicker(5 * time.Second)
+	for {
+		select {
+		case <-ticker.C:
+			fmt.Println("Active goroutines:", runtime.NumGoroutine())
+		}
+	}
+}
+
 func main() {
 	flag.Parse()
 
 	if len(flag.Args()) < 1 {
 		log.Fatal("Must specify port")
+	}
+
+	if enableGoroutineCounter {
+		go countGoroutines()
 	}
 
 	var port = flag.Args()[0]
@@ -148,16 +163,6 @@ func main() {
 
 	http.HandleFunc("/publish", servePublisher)
 	http.HandleFunc("/subscribe", serveSubscriber)
-
-	go func() {
-		ticker := time.NewTicker(1 * time.Second)
-		for {
-			select {
-			case <-ticker.C:
-				fmt.Println(runtime.NumGoroutine())
-			}
-		}
-	}()
 
 	err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
 	if err != nil {
